@@ -1,0 +1,46 @@
+name: Post Merge Hardened Relay Smoke Test
+
+on:
+  push:
+    branches: [hardening/anonymous-inbox]
+    paths:
+      - ".github/workflows/post-merge-hardened-smoke.yml"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  publish-and-dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Publish adversarial text and dispatch hardened main relay
+        env:
+          TOPIC: ai-bridge-inbox-qingjian0
+          RUN_ID: ${{ github.run_id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          MESSAGE='Post-merge hardened relay verification.
+          Literal Markdown: **must remain text** and `inline code`.
+          HTML payload: <script>alert("not executable")</script> <img src=x onerror=alert(1)>.
+          Special characters: < > " ''' & % emoji 🎯.
+          This message must be escaped and displayed as untrusted plain text.'
+          curl --fail-with-body --silent --show-error \
+            --request POST "https://ntfy.sh/${TOPIC}" \
+            --header 'Title: ChatGPT <img src=x onerror=alert(1)> `title` & test' \
+            --header 'Content-Type: text/plain; charset=utf-8' \
+            --data-binary "${MESSAGE}" \
+            --output ntfy-response.json
+          node -e '
+            const r=require("./ntfy-response.json");
+            if(r.event!=="message"||r.topic!==process.env.TOPIC||!r.id) throw new Error("Invalid ntfy receipt");
+            console.log("POST_CONFIRMED id="+r.id+" topic="+r.topic);
+          '
+          gh api --method PUT "repos/qingjian0/AI-Bridge/contents/test-results/post-merge-hardened-smoke-${RUN_ID}.json" \
+            --field message="test(inbox): record post-merge hardened relay receipt" \
+            --field content="$(base64 -w0 ntfy-response.json)" \
+            --field branch="hardening/anonymous-inbox"
+          gh api --method POST "repos/qingjian0/AI-Bridge/actions/workflows/inbox.yml/dispatches" --field ref="main"
+          echo "HARDENED_MAIN_RELAY_DISPATCHED"
