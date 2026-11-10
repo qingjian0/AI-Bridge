@@ -1,0 +1,32 @@
+{
+  "run_id": "42796609387",
+  "discussion_number": 4,
+  "checked_at": "2026-11-10T10:08:39.083Z",
+  "matches": [
+    {
+      "ntfy_message_id": "tvH2xyRUJP0f",
+      "found": true,
+      "comment_url": "https://github.com/qingjian0/AI-Bridge/discussions/4#discussioncomment-19515468"
+    },
+    {
+      "ntfy_message_id": "U743Lwtmfnid",
+      "found": true,
+      "comment_url": "https://github.com/qingjian0/AI-Bridge/discussions/4#discussioncomment-19515469"
+    },
+    {
+      "ntfy_message_id": "NPYVzzxEZeHp",
+      "found": true,
+      "comment_url": "https://github.com/qingjian0/AI-Bridge/discussions/4#discussioncomment-19515470"
+    },
+    {
+      "ntfy_message_id": "uvb1j7xQpfil",
+      "found": true,
+      "comment_url": "https://github.com/qingjian0/AI-Bridge/discussions/4#discussioncomment-19515471"
+    },
+    {
+      "ntfy_message_id": "PD7eZ14rwe4P",
+      "found": true,
+      "comment_url": "https://github.com/qingjian0/AI-Bridge/discussions/4#discussioncomment-19515472"
+    }
+  ]
+}
