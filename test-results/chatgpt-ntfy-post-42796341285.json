@@ -1,0 +1,2 @@
+{"run_id":"42796341285","attempt":"1","ntfy":{"id":"NPYVzzxEZeHp","time":1794305206,"expires":1794348406,"event":"message","topic":"ai-bridge-inbox-qingjian0","title":"ChatGPT initiated relay smoke test (Actions transport)","message":"AI-Bridge ChatGPT-authored relay smoke test. Initiated by ChatGPT; HTTP POST executed by an ephemeral GitHub Actions runner. run_id=42796341285; attempt=1. Real anonymous-topic publication."}
+}
