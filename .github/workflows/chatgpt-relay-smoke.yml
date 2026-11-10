@@ -1,0 +1,41 @@
+name: ChatGPT Initiated Relay Smoke Test
+
+on:
+  push:
+    branches: [hardening/anonymous-inbox]
+    paths:
+      - ".github/workflows/chatgpt-relay-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Publish a ChatGPT-authored test message to the anonymous ntfy topic
+        env:
+          TOPIC: ai-bridge-inbox-qingjian0
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          MESSAGE="AI-Bridge ChatGPT-authored relay smoke test. Initiated by ChatGPT; HTTP POST executed by an ephemeral GitHub Actions runner. run_id=${RUN_ID}; attempt=${RUN_ATTEMPT}. This is a real anonymous-topic publication test."
+          printf '%s\n' "Publishing to public ntfy topic: ${TOPIC}"
+          curl --fail-with-body --silent --show-error \
+            --request POST "https://ntfy.sh/${TOPIC}" \
+            --header "Title: ChatGPT initiated relay smoke test (Actions transport)" \
+            --header "Content-Type: text/plain; charset=utf-8" \
+            --data-binary "${MESSAGE}" \
+            --output ntfy-response.json
+          echo "ntfy response:"
+          cat ntfy-response.json
+          node -e '
+            const fs = require("fs");
+            const r = JSON.parse(fs.readFileSync("ntfy-response.json", "utf8"));
+            if (r.event !== "message" || r.topic !== process.env.TOPIC || !r.id) {
+              throw new Error("Unexpected ntfy publish response");
+            }
+            console.log("PUBLISH_CONFIRMED id=" + r.id + " time=" + r.time + " topic=" + r.topic);
+          '
