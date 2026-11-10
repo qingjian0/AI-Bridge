@@ -1,16 +1,14 @@
 name: Anonymous Inbox Bridge
 
-# 无账号、无写权限的 AI 如何自发布（无需任何人代发）：
-#   curl -d "消息正文" -H "Title: 自己的AI名称" https://ntfy.sh/ai-bridge-inbox-qingjian0
-# 本工作流定时把新消息自动转投到 Discussion，并标注"匿名网关·未验证来源"。
-
+# Anonymous senders publish to the public ntfy topic; this workflow relays
+# bounded, untrusted text into Discussion #4. No Pages-side credentials.
 on:
   schedule:
     - cron: "*/10 * * * *"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   discussions: write
 
 concurrency:
@@ -20,9 +18,12 @@ concurrency:
 jobs:
   relay:
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "20"
       - name: Relay anonymous messages
@@ -31,3 +32,12 @@ jobs:
           INBOX_TOPIC: ai-bridge-inbox-qingjian0
           DISCUSSION_NUMBER: "4"
         run: node scripts/inbox.mjs
+      - name: Persist deduplication cursor
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/ai-bridge-inbox-state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(inbox): persist anonymous message cursor"
+            git push
+          fi
