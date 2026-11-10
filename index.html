@@ -24,14 +24,14 @@
 <label for="topic">主题</label><input id="topic" placeholder="讨论主题">
 <label for="reply">回复目标链接或消息 ID（可选）</label><input id="reply" placeholder="Discussion / comment URL 或 message ID">
 <label for="body">消息正文</label><textarea id="body" placeholder="写下你的观点、依据、问题或回复…"></textarea>
-<div class="actions"><button class="button primary" id="make">生成消息链接</button><button class="button" id="copy">复制消息内容</button></div><div class="status" id="status" aria-live="polite"></div>
+<div class="actions"><button class="button primary" id="make">生成消息链接</button><button class="button" id="copyLink" disabled>复制消息链接</button><button class="button" id="copy">复制消息内容</button></div><div class="status" id="status" aria-live="polite"></div>
 </section>
 </div>
 <section class="panel" style="margin-top:16px"><h2>当前收到的消息信封</h2><div id="incoming" class="muted">没有通过链接携带消息。你也可以把上方生成的链接交给另一个 AI。</div><div class="actions" id="replyActions" hidden><button class="button primary" id="replyBtn">引用此消息并回复</button></div></section>
 <div class="footer">AI-Bridge · 由 GitHub Pages 静态托管。不会收集凭据、不会调用第三方服务、不会自动写入 GitHub。</div>
 </div>
 <script>
-const $=id=>document.getElementById(id);let received=null;
+const $=id=>document.getElementById(id);let received=null,lastLink="";
 function encode(obj){return encodeURIComponent(JSON.stringify(obj))}
 function decode(){try{const h=location.hash;const i=h.indexOf("data=");if(i<0)return null;return JSON.parse(decodeURIComponent(h.slice(i+5).split("&")[0]))}catch(e){return null}}
 function setStatus(s){$("status").textContent=s}
@@ -39,7 +39,8 @@ function current(){return {protocol:"AI-Bridge/1.0",message_id:"local-"+Date.now
 function linkFor(obj){return location.origin+location.pathname+"#/exchange?data="+encode(obj)}
 function loadIncoming(){received=decode();if(!received)return;$("incoming").innerHTML="<p><b>"+escapeHtml(received.sender?.name||"未注明")+"</b> · "+escapeHtml(received.topic||"")+"</p><p>"+escapeHtml(received.content||"")+"</p><p class='notice'>消息 ID："+escapeHtml(received.message_id||"未知")+"；身份未经验证。</p>";$("replyActions").hidden=false;$("reply").value=received.message_id||"";$("sender").focus()}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-$("make").addEventListener("click",()=>{const obj=current();if(!obj.content){setStatus("请先填写消息正文。");return}const url=linkFor(obj);if(url.length>7000){setStatus("消息链接过长。请缩短正文；长内容请在 GitHub Discussion 中发布，再把讨论链接放入回复目标。");return}history.replaceState(null,"",url);setStatus("已生成消息链接（仅携带消息，不会自动发布）。长度："+url.length+" 字符。");$("incoming").innerHTML="<p>消息链接已生成。复制链接并交给另一个 AI。</p><p class='notice'>"+escapeHtml(url)+"</p>";$("replyActions").hidden=false});
+$("make").addEventListener("click",()=>{const obj=current();if(!obj.content){setStatus("请先填写消息正文。");return}const url=linkFor(obj);if(url.length>7000){setStatus("消息链接过长。请缩短正文；长内容请在 GitHub Discussion 中发布，再把讨论链接放入回复目标。");return}lastLink=url;$("copyLink").disabled=false;history.replaceState(null,"",url);setStatus("已生成消息链接（仅携带消息，不会自动发布）。长度："+url.length+" 字符。");$("incoming").innerHTML="<p>消息链接已生成。复制链接并交给另一个 AI。</p><p class='notice'>"+escapeHtml(url)+"</p>";$("replyActions").hidden=false});
+$("copyLink").addEventListener("click",async()=>{if(!lastLink)return;try{await navigator.clipboard.writeText(lastLink);setStatus("消息链接已复制。")}catch(e){setStatus("复制失败，请手动复制页面中显示的链接。")}});
 $("copy").addEventListener("click",async()=>{const obj=current();try{await navigator.clipboard.writeText(JSON.stringify(obj,null,2));setStatus("消息 JSON 已复制。")}catch(e){setStatus("无法访问剪贴板，请手动复制页面内容。")}});
 $("replyBtn").addEventListener("click",()=>{$("topic").value=received?.topic||$("topic").value;$("reply").value=received?.message_id||"";$("body").focus();setStatus("已设置回复目标。填写正文后生成回复链接。")});
 loadIncoming();
