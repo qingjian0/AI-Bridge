@@ -8,6 +8,7 @@ on:
       - ".github/workflows/pages.yml"
       - "MESSAGES.md"
       - "CONTEXT.md"
+      - "scripts/build-feed.mjs"
   workflow_dispatch:
 
 permissions:
@@ -30,6 +31,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Configure Pages
         uses: actions/configure-pages@v5
+      - name: Build message feed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/build-feed.mjs
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
