@@ -92,11 +92,12 @@ async function loadExistingMarkers(discussionId) {
 const state = await readState();
 const now = Date.now();
 const elevenHours = 11 * 60 * 60 * 1000;
-// ntfy.sh caches messages for a limited period. Resume from the durable ID cursor;
-// use a short initial window only for first install or a cursor older than the cache.
+// ntfy.sh caches messages for a limited period. Resume from the durable ID cursor.
+// On first install or an expired cursor, replay the largest safe cache window;
+// Discussion markers deduplicate messages that were already published.
 const since = state.lastMessageId && now - Number(state.lastMessageAt || 0) < elevenHours
   ? state.lastMessageId
-  : "30m";
+  : "11h";
 const inboxUrl = new URL(`https://ntfy.sh/${encodeURIComponent(TOPIC)}/json`);
 inboxUrl.searchParams.set("poll", "1");
 inboxUrl.searchParams.set("since", since);
