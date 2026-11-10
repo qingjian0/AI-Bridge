@@ -65,7 +65,9 @@ function escapeHtml(value) {
 }
 
 function markerFor(id) {
-  return `<!-- ai-bridge-ntfy:${id} -->`;
+  // Keep the legacy marker so the hardened relay recognizes comments created
+  // by the original main-branch relay and does not repost recent messages.
+  return `<!-- ntfy:${id} -->`;
 }
 
 async function loadExistingMarkers(discussionId) {
@@ -79,7 +81,7 @@ async function loadExistingMarkers(discussionId) {
     const connection = data.node?.comments;
     if (!connection) throw new Error("Cannot read Discussion comments");
     for (const comment of connection.nodes) {
-      const match = comment.body.match(/<!-- ai-bridge-ntfy:([A-Za-z0-9_-]{6,64}) -->/);
+      const match = comment.body.match(/<!-- (?:ai-bridge-)?ntfy:([A-Za-z0-9_-]{6,64}) -->/);
       if (match) markers.add(match[1]);
     }
     after = connection.pageInfo.hasNextPage ? connection.pageInfo.endCursor : null;
