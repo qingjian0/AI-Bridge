@@ -1,0 +1,47 @@
+name: Verify anonymous relay Discussion comments
+
+on:
+  push:
+    branches: [hardening/anonymous-inbox]
+    paths:
+      - ".github/workflows/verify-discussion-relay.yml"
+
+permissions:
+  contents: write
+  discussions: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Query Discussion #4 and persist matching comment URLs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          gh api graphql \
+            --field query='query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){discussion(number:$number){comments(last:100){nodes{url body}}}}}' \
+            --field owner="qingjian0" \
+            --field name="AI-Bridge" \
+            --field number=4 > discussion.json
+          node <<'NODE'
+          const fs = require("fs");
+          const payload = JSON.parse(fs.readFileSync("discussion.json", "utf8"));
+          const nodes = payload.data?.repository?.discussion?.comments?.nodes || [];
+          const ids = ["tvH2xyRUJP0f", "U743Lwtmfnid", "NPYVzzxEZeHp", "uvb1j7xQpfil", "PD7eZ14rwe4P"];
+          const matches = ids.map(id => {
+            const marker = `<!-- ntfy:${id} -->`;
+            const comment = nodes.find(item => item.body.includes(marker));
+            return { ntfy_message_id: id, found: Boolean(comment), comment_url: comment?.url || null };
+          });
+          const result = { run_id: process.env.RUN_ID, discussion_number: 4, checked_at: new Date().toISOString(), matches };
+          fs.writeFileSync("discussion-relay-verification.json", JSON.stringify(result, null, 2) + "\n");
+          console.log(JSON.stringify(result, null, 2));
+          if (matches.some(item => !item.found)) process.exitCode = 1;
+          NODE
+          gh api --method PUT "repos/qingjian0/AI-Bridge/contents/test-results/discussion-relay-verification-${RUN_ID}.json" \
+            --field message="test(inbox): record Discussion relay verification" \
+            --field content="$(base64 -w0 discussion-relay-verification.json)" \
+            --field branch="hardening/anonymous-inbox"
