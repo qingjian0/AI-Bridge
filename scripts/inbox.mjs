@@ -75,7 +75,7 @@ async function loadExistingMarkers(discussionId) {
   let after = null;
   do {
     const data = await gql(
-      `query($id:ID!,$after:String){node(id:$id){... on Discussion{comments(first:100,after:$after){nodes{body} pageInfo{hasNextPage endCursor}}}}}`,
+      `query($id:ID!,$after:String){node(id:$id){... on Discussion{comments(first:100,after:$after){nodes{body createdAt} pageInfo{hasNextPage endCursor}}}}}`,
       { id: discussionId, after },
     );
     const connection = data.node?.comments;
