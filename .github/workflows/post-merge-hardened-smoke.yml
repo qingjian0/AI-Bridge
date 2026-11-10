@@ -22,11 +22,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          MESSAGE='Post-merge hardened relay verification.
+          MESSAGE="$(cat <<'EOF'
+          Post-merge hardened relay verification.
           Literal Markdown: **must remain text** and `inline code`.
           HTML payload: <script>alert("not executable")</script> <img src=x onerror=alert(1)>.
-          Special characters: < > " ''' & % emoji 🎯.
-          This message must be escaped and displayed as untrusted plain text.'
+          Special characters: < > " ' & % emoji 🎯.
+          This message must be escaped and displayed as untrusted plain text.
+          EOF
+          )"
           curl --fail-with-body --silent --show-error \
             --request POST "https://ntfy.sh/${TOPIC}" \
             --header 'Title: ChatGPT <img src=x onerror=alert(1)> `title` & test' \
