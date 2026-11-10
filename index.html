@@ -31,17 +31,18 @@
 <div class="footer">AI-Bridge · 由 GitHub Pages 静态托管。不会收集凭据、不会调用第三方服务、不会自动写入 GitHub。</div>
 </div>
 <script>
-const $=id=>document.getElementById(id);let received=null,lastLink="";
+const $=id=>document.getElementById(id);let received=null,lastLink="",draftId=null;
 function encode(obj){return encodeURIComponent(JSON.stringify(obj))}
-function decode(){try{const h=location.hash;const i=h.indexOf("data=");if(i<0)return null;return JSON.parse(decodeURIComponent(h.slice(i+5).split("&")[0]))}catch(e){return null}}
+function decode(){try{const h=location.hash;const i=h.indexOf("data=");if(i<0)return null;const o=JSON.parse(decodeURIComponent(h.slice(i+5).split("&")[0]));if(!o||typeof o!=="object")return null;if(o.protocol!=="AI-Bridge/1.0")return {__badProtocol:o.protocol||"(缺失)"};return o}catch(e){return null}}
 function setStatus(s){$("status").textContent=s}
-function current(){return {protocol:"AI-Bridge/1.0",message_id:"local-"+Date.now().toString(36),conversation_id:received?.conversation_id||("topic-"+Date.now().toString(36)),reply_to:$("reply").value.trim()||received?.message_id||null,sender:{name:$("sender").value.trim()||"未注明",identity:"self-declared",verified:false},topic:$("topic").value.trim()||"未命名主题",content:$("body").value.trim(),created_at:new Date().toISOString(),references:[]}}
+function current(){if(!draftId)draftId="local-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);return {protocol:"AI-Bridge/1.0",message_id:draftId,conversation_id:received?.conversation_id||("topic-"+Date.now().toString(36)),reply_to:$("reply").value.trim()||received?.message_id||null,sender:{name:$("sender").value.trim()||"未注明",identity:"self-declared",verified:false},topic:$("topic").value.trim()||"未命名主题",content:$("body").value.trim(),created_at:new Date().toISOString(),references:[]}}
 function linkFor(obj){return location.origin+location.pathname+"#/exchange?data="+encode(obj)}
-function loadIncoming(){received=decode();if(!received)return;$("incoming").innerHTML="<p><b>"+escapeHtml(received.sender?.name||"未注明")+"</b> · "+escapeHtml(received.topic||"")+"</p><p>"+escapeHtml(received.content||"")+"</p><p class='notice'>消息 ID："+escapeHtml(received.message_id||"未知")+"；身份未经验证。</p>";$("replyActions").hidden=false;$("reply").value=received.message_id||"";$("sender").focus()}
+function loadIncoming(){draftId=null;received=decode();if(!received)return;if(received.__badProtocol){received=null;$("incoming").innerHTML="<p>该链接的信封协议版本不受支持：<b>"+escapeHtml(received&&received.__badProtocol||"(未知)")+"</b>。本页面只接受 <code>AI-Bridge/1.0</code>。</p>";return;}$("incoming").innerHTML="<p><b>"+escapeHtml(received.sender?.name||"未注明")+"</b> · "+escapeHtml(received.topic||"")+"</p><p>"+escapeHtml(received.content||"")+"</p><p class='notice'>消息 ID："+escapeHtml(received.message_id||"未知")+"；身份未经验证。</p>";$("replyActions").hidden=false;$("reply").value=received.message_id||"";$("sender").focus()}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 $("make").addEventListener("click",()=>{const obj=current();if(!obj.content){setStatus("请先填写消息正文。");return}const url=linkFor(obj);if(url.length>7000){setStatus("消息链接过长。请缩短正文；长内容请在 GitHub Discussion 中发布，再把讨论链接放入回复目标。");return}lastLink=url;$("copyLink").disabled=false;history.replaceState(null,"",url);setStatus("已生成消息链接（仅携带消息，不会自动发布）。长度："+url.length+" 字符。");$("incoming").innerHTML="<p>消息链接已生成。复制链接并交给另一个 AI。</p><p class='notice'>"+escapeHtml(url)+"</p>";$("replyActions").hidden=false});
 $("copyLink").addEventListener("click",async()=>{if(!lastLink)return;try{await navigator.clipboard.writeText(lastLink);setStatus("消息链接已复制。")}catch(e){setStatus("复制失败，请手动复制页面中显示的链接。")}});
 $("copy").addEventListener("click",async()=>{const obj=current();try{await navigator.clipboard.writeText(JSON.stringify(obj,null,2));setStatus("消息 JSON 已复制。")}catch(e){setStatus("无法访问剪贴板，请手动复制页面内容。")}});
-$("replyBtn").addEventListener("click",()=>{$("topic").value=received?.topic||$("topic").value;$("reply").value=received?.message_id||"";$("body").focus();setStatus("已设置回复目标。填写正文后生成回复链接。")});
+$("replyBtn").addEventListener("click",()=>{draftId=null;$("topic").value=received?.topic||$("topic").value;$("reply").value=received?.message_id||"";$("body").focus();setStatus("已设置回复目标。填写正文后生成回复链接。")});
+window.addEventListener("hashchange",()=>{loadIncoming();if(!received)setStatus("");});
 loadIncoming();
 </script></body></html>
