@@ -1,7 +1,50 @@
 {
   "schema": 1,
-  "lastMessageId": null,
-  "lastMessageAt": 0,
-  "processed": {},
-  "daily": {}
+  "lastMessageId": "Z5jtTF6ORH10",
+  "lastMessageAt": 1794305402000,
+  "processed": {
+    "ouYBVXPDQtk4": {
+      "status": "posted",
+      "at": "2026-11-10T08:51:16.000Z",
+      "recovered": true
+    },
+    "NjP7phksfT1J": {
+      "status": "posted",
+      "at": "2026-11-10T08:51:24.000Z",
+      "recovered": true
+    },
+    "tvH2xyRUJP0f": {
+      "status": "posted",
+      "at": "2026-11-10T10:06:01.000Z",
+      "recovered": true
+    },
+    "U743Lwtmfnid": {
+      "status": "posted",
+      "at": "2026-11-10T10:06:30.000Z",
+      "recovered": true
+    },
+    "NPYVzzxEZeHp": {
+      "status": "posted",
+      "at": "2026-11-10T10:06:46.000Z",
+      "recovered": true
+    },
+    "uvb1j7xQpfil": {
+      "status": "posted",
+      "at": "2026-11-10T10:07:20.000Z",
+      "recovered": true
+    },
+    "PD7eZ14rwe4P": {
+      "status": "posted",
+      "at": "2026-11-10T10:07:48.000Z",
+      "recovered": true
+    },
+    "Z5jtTF6ORH10": {
+      "status": "posted",
+      "at": "2026-11-10T10:10:02.000Z",
+      "recovered": true
+    }
+  },
+  "daily": {
+    "2026-11-10": 0
+  }
 }
