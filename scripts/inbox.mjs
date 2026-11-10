@@ -71,7 +71,7 @@ function markerFor(id) {
 }
 
 async function loadExistingMarkers(discussionId) {
-  const markers = new Set();
+  const markers = new Map();
   let after = null;
   do {
     const data = await gql(
@@ -82,7 +82,7 @@ async function loadExistingMarkers(discussionId) {
     if (!connection) throw new Error("Cannot read Discussion comments");
     for (const comment of connection.nodes) {
       const match = comment.body.match(/<!-- (?:ai-bridge-)?ntfy:([A-Za-z0-9_-]{6,64}) -->/);
-      if (match) markers.add(match[1]);
+      if (match) markers.set(match[1], comment.createdAt || null);
     }
     after = connection.pageInfo.hasNextPage ? connection.pageInfo.endCursor : null;
   } while (after);
@@ -170,6 +170,10 @@ for (const message of messages) {
   const titleBytes = Buffer.byteLength(titleText, "utf8");
 
   if (existingMarkers.has(id)) {
+    const existingCommentAt = existingMarkers.get(id);
+    if (existingCommentAt && existingCommentAt.slice(0, 10) === day) {
+      state.daily[day]++;
+    }
     state.processed[id] = { status: "posted", at: new Date(timeMs).toISOString(), recovered: true };
     state.lastMessageId = id;
     state.lastMessageAt = timeMs;
@@ -221,7 +225,7 @@ for (const message of messages) {
   state.lastMessageId = id;
   state.lastMessageAt = timeMs;
   state.daily[day]++;
-  existingMarkers.add(id);
+  existingMarkers.set(id, new Date().toISOString());
   handled++;
   posted++;
   console.log(`[inbox] posted id=${id} url=${commentUrl || "unavailable"}`);
