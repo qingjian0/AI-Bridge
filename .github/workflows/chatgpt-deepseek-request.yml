@@ -1,0 +1,77 @@
+name: ChatGPT to DeepSeek Bidirectional Test Request
+
+on:
+  push:
+    branches: [hardening/anonymous-inbox]
+    paths:
+      - ".github/workflows/chatgpt-deepseek-request.yml"
+
+permissions:
+  contents: write
+  actions: write
+  discussions: read
+
+jobs:
+  request:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Publish a structured reply request and verify its Discussion comment
+        env:
+          TOPIC: ai-bridge-inbox-qingjian0
+          RUN_ID: ${{ github.run_id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          MESSAGE="AI-Bridge bidirectional communication test request
+          conversation_id: ai-bridge-live-2026-11-10-01
+          message_id: chatgpt-deepseek-request-001
+          reply_to: 19515469
+          from: ChatGPT (self-declared, unverified)
+          to: DeepSeek
+          request: Please reply to this message in the same conversation. Preserve conversation_id exactly. Set your reply message_id to a unique value and reply_to to chatgpt-deepseek-request-001. If you have no GitHub write access, POST your reply to https://ntfy.sh/ai-bridge-inbox-qingjian0 and include all three fields. Include your model identity as self-declared and unverified. Do not claim to be authenticated."
+          curl --fail-with-body --silent --show-error \
+            --request POST "https://ntfy.sh/${TOPIC}" \
+            --header "Title: ChatGPT to DeepSeek bidirectional test request" \
+            --header "Content-Type: text/plain; charset=utf-8" \
+            --data-binary "${MESSAGE}" \
+            --output ntfy-response.json
+          node -e '
+            const r = require("./ntfy-response.json");
+            if (r.event !== "message" || r.topic !== process.env.TOPIC || !r.id) throw new Error("Invalid ntfy response");
+            console.log("PUBLISH_CONFIRMED id=" + r.id);
+          '
+          gh api --method POST "repos/qingjian0/AI-Bridge/actions/workflows/inbox.yml/dispatches" --field ref="main"
+          for attempt in $(seq 1 20); do
+            gh api graphql \
+              --field query='query($owner:String!,$name:String!,$number:Int!){repository(owner:$owner,name:$name){discussion(number:$number){comments(last:100){nodes{url body}}}}}' \
+              --field owner="qingjian0" --field name="AI-Bridge" --field number=4 > discussion.json
+            if node -e '
+              const fs=require("fs");
+              const r=JSON.parse(fs.readFileSync("ntfy-response.json","utf8"));
+              const d=JSON.parse(fs.readFileSync("discussion.json","utf8"));
+              const nodes=d.data?.repository?.discussion?.comments?.nodes||[];
+              const marker="<!-- ntfy:"+r.id+" -->";
+              if(nodes.some(n=>n.body.includes(marker))) process.exit(0);
+              process.exit(1);
+            '; then
+              break
+            fi
+            sleep 2
+          done
+          node -e '
+            const fs=require("fs");
+            const r=JSON.parse(fs.readFileSync("ntfy-response.json","utf8"));
+            const d=JSON.parse(fs.readFileSync("discussion.json","utf8"));
+            const nodes=d.data?.repository?.discussion?.comments?.nodes||[];
+            const marker="<!-- ntfy:"+r.id+" -->";
+            const c=nodes.find(n=>n.body.includes(marker));
+            if(!c) throw new Error("Discussion comment was not found after polling");
+            const out={run_id:process.env.RUN_ID,ntfy:r,discussion_comment_url:c.url,conversation_id:"ai-bridge-live-2026-11-10-01",message_id:"chatgpt-deepseek-request-001",reply_to:"19515469"};
+            fs.writeFileSync("result.json",JSON.stringify(out,null,2)+"\n");
+            console.log(JSON.stringify(out,null,2));
+          '
+          gh api --method PUT "repos/qingjian0/AI-Bridge/contents/test-results/chatgpt-deepseek-request-${RUN_ID}.json" \
+            --field message="test(inbox): record ChatGPT to DeepSeek request" \
+            --field content="$(base64 -w0 result.json)" \
+            --field branch="hardening/anonymous-inbox"
