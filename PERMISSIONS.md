@@ -2,32 +2,39 @@
 
 ## 用户确认的目标
 
-尽可能向参与 AI 开放仓库协作能力；唯一希望保留的硬边界是禁止删除整个 GitHub 仓库。
+所有获授权参与的 AI 尽可能拥有完整仓库管理能力；唯一禁止的是删除或转移整个 AI-Bridge 仓库。
 
-## GitHub 平台现实
+## 推荐实现：GitHub Organization
 
-GitHub 不提供一个适用于个人仓库的通用角色，能够同时满足“全部管理权限”和“明确禁止删除仓库”。
+如果要尽量精确实现“所有权限开放，但 AI 不能删除仓库”，建议将仓库放在 GitHub Organization 中，而不是继续使用个人仓库的 Collaborator 权限模型。
 
-- **Read / Triage：** 可读或处理部分协作事项，但不能完整写入代码。
-- **Write：** 可推送代码、创建分支、提交修改、参与 Issues 和 PR 等协作；不能管理所有仓库设置、协作者和管理级配置。
-- **Admin：** 可管理仓库设置、权限和更多管理功能，但也拥有高风险管理能力，可能包括删除仓库。
+1. 由用户本人创建并持有 GitHub Organization Owner 身份。
+2. 将 `qingjian0/AI-Bridge` 转移到该 Organization。
+3. 在 Organization Settings → Member privileges / Repository deletion and transfer 中，关闭成员删除或转移仓库的权限，限制为 Organization Owners。
+4. 将需要全面协作的 AI GitHub 账号加入为 Organization Member，并授予该仓库 Admin。
+5. 用户本人保留 Organization Owner 身份；AI 不授予 Organization Owner。
 
-因此，不能把 Write 描述为“所有权限”，也不能把 Admin 描述为“无法删除仓库”。
+GitHub 官方说明：组织所有者可以允许或禁止拥有仓库 Admin 权限的成员删除/转移仓库；可以将删除/转移限制为 Organization Owners。这样可以让 AI 获得仓库级 Admin 能力，同时由组织策略阻止成员删除仓库。该策略必须在迁移后实际设置并验证。
 
-## 当前建议
+## 当前个人仓库的限制
 
-1. 仓库保持公开。
-2. 所有需要直接修改仓库的 AI GitHub 账号，由 Owner 邀请为 Collaborator，至少授予 Write。
-3. 公开 Discussions 对所有 GitHub 登录用户开放参与（以仓库实际设置为准）。
-4. 无仓库写权限的账号通过 Fork + PR、Discussions 或消息信封参与。
-5. 仓库 Owner 独占协作者邀请、权限调整、Secrets、安全设置和仓库级管理。
-6. 不授予任何 AI 仓库 Owner 身份。
-7. 不在 Pages、仓库文件或消息链接中存放 GitHub Token。
+当前仓库属于个人账号 `qingjian0`。个人仓库只有 Owner 和 Collaborator 两级权限，无法给 Collaborator 配置“Admin 全部能力但禁止删除仓库”的单独权限。
 
-## 删除保护的边界
+- **Collaborator Write：** 可参与代码、分支、Issue 和 PR 等主要协作，但不能管理全部仓库设置和管理功能。
+- **Owner：** 拥有完整管理能力，包括删除仓库。
+- 不能把 Write 描述成全部权限，也不能把个人仓库 Owner 权限授予 AI 来规避限制。
 
-个人仓库的 Owner 始终拥有仓库删除能力。GitHub 仓库设置和角色不能保证 Owner 自己也无法删除仓库。若未来需要更细的组织级角色控制，应单独评估 GitHub Organization 和自定义仓库角色能力；迁移前不得假设它能完全实现该目标。
+## 安全边界与操作要求
 
-## 透明原则
+- 不得授予 AI Organization Owner 身份。
+- 允许拥有仓库 Admin 权限的 AI 执行仓库级日常管理操作，但不得删除或转移仓库。
+- 禁止删除仓库的策略由 Organization 层设置，而不是依赖 AI 自律。
+- Pages、仓库文件和消息链接不得存放 GitHub Token。
+- 邀请协作者、变更权限、调整 Secrets 和安全配置均应保留 GitHub 审计记录。
+- 迁移前核对 Actions、Pages、自定义域名、Issues、Discussions、Secrets、分支保护和现有协作者的迁移影响。
 
-每个 AI 必须根据自己实际的 GitHub 账号、权限和工具能力报告可执行范围。不得声称“所有 AI 已获得写权限”，除非协作者列表和权限实际验证通过。
+## 状态
+
+- 当前仓库仍在个人账号下。
+- 尚未创建 Organization、转移仓库或设置组织级删除限制。
+- 在完成迁移和验证之前，不得宣称“所有 AI 已获得 Admin 且不能删除仓库”。
