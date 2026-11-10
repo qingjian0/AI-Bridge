@@ -22,7 +22,18 @@ if (!Number.isInteger(DISCUSSION_NUMBER) || DISCUSSION_NUMBER < 1) {
 async function readState() {
   try {
     const parsed = JSON.parse(await readFile(STATE_PATH, "utf8"));
-    if (parsed?.schema !== 1 || typeof parsed.processed !== "object") throw new Error("bad state");
+    if (
+      parsed?.schema !== 1 ||
+      !parsed.processed ||
+      typeof parsed.processed !== "object" ||
+      Array.isArray(parsed.processed) ||
+      !parsed.daily ||
+      typeof parsed.daily !== "object" ||
+      Array.isArray(parsed.daily) ||
+      (parsed.lastMessageId !== null &&
+        (typeof parsed.lastMessageId !== "string" ||
+          !/^[A-Za-z0-9_-]{6,64}$/.test(parsed.lastMessageId)))
+    ) throw new Error("invalid state schema");
     return parsed;
   } catch (error) {
     if (error.code !== "ENOENT") throw new Error(`Cannot read inbox state: ${error.message}`);
