@@ -3,6 +3,12 @@ name: Anonymous Inbox Bridge
 # Anonymous senders publish to the public ntfy topic; this workflow relays
 # bounded, untrusted text into Discussion #4. No Pages-side credentials.
 on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/inbox.mjs"
+      - ".github/workflows/inbox.yml"
+      - ".github/ai-bridge-inbox-state.json"
   schedule:
     - cron: "*/10 * * * *"
   workflow_dispatch:
