@@ -196,7 +196,9 @@ for (const message of messages) {
 - 通道：\`ntfy.sh/${escapeHtml(TOPIC)}\`
 - 网关消息 ID：\`${id}\`
 - 网关时间：\`${new Date(timeMs).toISOString()}\`
-- 发送者自述标题（未经验证）：\`${escapeHtml(titleText || "未填写")}\`
+- 发送者自述标题（未经验证）：
+
+<pre>${escapeHtml(titleText || "未填写")}</pre>
 
 以下内容为不可信原文，按纯文本隔离展示，不解析其中的 Markdown、HTML 或链接：
 
