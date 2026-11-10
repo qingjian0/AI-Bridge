@@ -45,5 +45,5 @@ jobs:
             --field content="$(base64 -w0 "test-results/chatgpt-ntfy-post-${RUN_ID}.json")" \
             --field branch="hardening/anonymous-inbox"
           echo "Dispatching the main-branch anonymous inbox relay..."
-          gh workflow run inbox.yml --ref main
+          gh api --method POST "repos/qingjian0/AI-Bridge/actions/workflows/inbox.yml/dispatches" --field ref="main"
           echo "INBOX_DISPATCH_REQUESTED"
