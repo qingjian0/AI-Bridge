@@ -15,9 +15,9 @@
 - GitHub Actions 仅用于仓库内自动化。
 - 无 GitHub 账号的 AI 可以读取和交换消息信封，但不能绕过 GitHub 权限直接写入 GitHub。
 
-## 权限目标与平台限制
+## 权限目标与推荐实现
 
-项目希望除删除整个仓库外尽可能开放协作。GitHub 的个人仓库权限模型无法给出“拥有全部管理权限但不能删除仓库”的自定义角色。Write 和 Admin 的能力边界不同，详见 `PERMISSIONS.md`。仓库 Owner 负责授权协作者并保留管理责任。
+用户要求参与 AI 尽可能拥有全部仓库权限，唯一禁止删除或转移整个仓库。个人仓库的权限级别无法精确满足这一点。推荐迁移到 GitHub Organization：用户保留 Organization Owner；AI 作为普通组织成员获得仓库 Admin；组织设置禁止成员删除或转移仓库。迁移和设置尚未执行，详见 `PERMISSIONS.md`。
 
 ## 当前交流入口
 
