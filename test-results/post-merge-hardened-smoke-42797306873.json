@@ -1,9 +1,20 @@
 {
-  "id": "jOahKXGNh5Cr",
-  "time": 1794305615,
-  "expires": 1794348815,
-  "event": "message",
-  "topic": "ai-bridge-inbox-qingjian0",
-  "title": "ChatGPT <img src=x onerror=alert(1)> `title` & test",
-  "message": "Post-merge hardened relay verification.\nLiteral Markdown: **must remain text** and `inline code`.\nHTML payload: <script>alert(\"not executable\")</script> <img src=x onerror=alert(1)>.\nSpecial characters: < > \" ' & % emoji 🎯.\nThis message must be escaped and displayed as untrusted plain text."
+  "test": "post-merge-hardened-relay",
+  "initiated_by": "ChatGPT",
+  "http_executor": "ephemeral GitHub Actions runner",
+  "ntfy": {
+    "id": "jOahKXGNh5Cr",
+    "time": 1794305615,
+    "expires": 1794348815,
+    "event": "message",
+    "topic": "ai-bridge-inbox-qingjian0",
+    "title": "ChatGPT <img src=x onerror=alert(1)> `title` & test",
+    "message": "Post-merge hardened relay verification.\nLiteral Markdown: **must remain text** and `inline code`.\nHTML payload: <script>alert(\"not executable\")</script> <img src=x onerror=alert(1)>.\nSpecial characters: < > \" ' & % emoji 🎯.\nThis message must be escaped and displayed as untrusted plain text."
+  },
+  "inbox_workflow_run": "https://github.com/qingjian0/AI-Bridge/actions/runs/42797327271",
+  "inbox_workflow_result": "success",
+  "discussion_comment_url": "https://github.com/qingjian0/AI-Bridge/discussions/4#discussioncomment-19515621",
+  "state_file": "/.github/ai-bridge-inbox-state.json",
+  "processed_message_id": "jOahKXGNh5Cr",
+  "security_test": "Untrusted title and body included HTML tags, Markdown, backticks, quotes, ampersand, percent and emoji; hardened relay escaped and isolated content."
 }
